@@ -1,0 +1,66 @@
+{
+  "name": "@scopebound/n8n-nodes-scopebound",
+  "version": "0.1.0-preview.1",
+  "description": "Scopebound n8n community node — pre-execution scope enforcement for AI agent workflows. Validates workflows against agent role authorization before execution.",
+  "license": "Apache-2.0",
+  "author": "Scopebound, Inc. <hello@scopebound.ai>",
+  "homepage": "https://scopebound.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scopebound-ai/n8n-nodes-scopebound.git"
+  },
+  "bugs": {
+    "url": "https://github.com/scopebound-ai/n8n-nodes-scopebound/issues"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "scopebound",
+    "ai-agents",
+    "compliance",
+    "soc1",
+    "soc2",
+    "hipaa",
+    "policy-enforcement"
+  ],
+  "engines": {
+    "node": ">=18.10"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -s"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/ScopeboundApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Scopebound/Scopebound.node.js"
+    ]
+  },
+  "dependencies": {
+    "@scopebound/sdk": "0.1.0-preview.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.0",
+    "gulp": "^4.0.2",
+    "n8n-workflow": "^1.50.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
