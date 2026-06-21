@@ -112,15 +112,48 @@ export class Scopebound implements INodeType {
     ],
     properties: [
       {
-        displayName: 'Role ID',
-        name: 'roleId',
-        type: 'string',
-        default: '',
-        required: true,
-        placeholder: 'ap-processor',
-        description:
-          'The Scopebound agent role to evaluate against. Accepts either a role UUID or a role name.',
-      },
+        displayName: 'Identify Role By',
+        name: 'roleIdentifierType',
+        type: 'options',
+        default: 'id',
+        options: [ 
+          {
+            name: 'Role ID (UUID)',
+            value: 'id',
+            description: 'Specify the role UUID'
+          },
+          {
+            name: 'Role Name',
+            value: 'name',
+            description: 'Specify the role name'
+          },
+        ],
+        description: 'How to identify the agent role to evaluate against',
+        },
+{
+  displayName: 'Role ID',
+  name: 'roleId',
+  type: 'string',
+  default: '',
+  required: true,
+  placeholder: '747b0d54.....',
+  displayOptions: {
+    show: { roleIdentifierType: ['id'] },
+  },
+  description: 'The UUID of the Scopebound agent role to evaluate against',
+},
+{
+  displayName: 'Role Name',
+  name: 'roleName',
+  type: 'string',
+  default: '',
+  required: true,
+  placeholder: 'ap-processor',
+  displayOptions: {
+    show: { roleIdentifierType: ['name'] },
+  },
+  description: 'The name of the Scopebound agent role',
+},
       {
         displayName: 'Evaluation Profile',
         name: 'evaluationProfile',
@@ -186,22 +219,24 @@ export class Scopebound implements INodeType {
         description: 'Workflow definition as JSON. Used directly without per-item iteration.',
       },
       {
-        displayName: 'Source Format',
+        displayName: 'Workflow Format',
         name: 'sourceFormat',
         type: 'options',
-        default: 'savant',
+        default: 'n8n',
         options: [
           {
-            name: 'Savant (Canonical)',
-            value: 'savant',
-            description: 'Canonical Scopebound workflow shape',
+            name: 'n8n',
+            value: 'n8n',
+            description: 'Native n8n workflow export',
           },
-          { name: 'n8n', value: 'n8n', description: 'n8n workflow export — server translates' },
+          { name: 'Canonical', 
+            value: 'savant', 
+            description: 'Scopebound canonical workflow shape — for hand-built workflow JSONs' },
           { name: 'Make', value: 'make' },
           { name: 'Zapier', value: 'zapier' },
         ],
         description:
-          'Workflow source format. Non-Savant formats invoke the server-side translator to produce the canonical DAG.',
+          'Format of the workflow definition being evaluated. Use Canonical for hand-built workflows in Scopebound shape.',
       },
       {
         displayName: 'Mode',
@@ -238,7 +273,12 @@ export class Scopebound implements INodeType {
 
     const client = new ScopeboundClient({ apiKey, baseUrl });
 
-    const roleId = this.getNodeParameter('roleId', 0) as string;
+    //const roleId = this.getNodeParameter('roleId', 0) as string;
+    const roleIdentifierType = this.getNodeParameter('roleIdentifierType', 0, 'id') as 'id' | 'name';
+const roleId =
+  roleIdentifierType === 'id'
+    ? (this.getNodeParameter('roleId', 0) as string)
+    : (this.getNodeParameter('roleName', 0) as string);
     const evaluationProfile = this.getNodeParameter('evaluationProfile', 0) as EvaluationProfile[];
     const workflowSource = this.getNodeParameter('workflowSource', 0) as 'inputJson' | 'parameter';
     const sourceFormat = this.getNodeParameter('sourceFormat', 0) as SourceFormat;

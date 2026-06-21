@@ -48,15 +48,15 @@
     ]
   },
   "dependencies": {
-    "@scopebound/sdk": "0.1.0-preview.1"
+    "@scopebound/sdk": "0.1.0-preview.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.0",
-    "gulp": "^4.0.2",
-    "n8n-workflow": "^1.50.0",
+    "gulp": "^5.0.1",
+    "n8n-workflow": "^2.16.0",
     "prettier": "^3.2.0",
     "typescript": "^5.4.0"
   },

@@ -17,8 +17,8 @@ import type {
 export class ScopeboundApi implements ICredentialType {
   name = 'scopeboundApi';
   displayName = 'Scopebound API';
-  documentationUrl = 'https://docs.scopebound.ai/sdk/n8n';
-
+  //documentationUrl = 'https://docs.scopebound.ai/sdk/n8n';
+    documentationUrl = 'https://github.com/scopebound-ai/n8n-nodes-scopebound#readme';
   properties: INodeProperties[] = [
     {
       displayName: 'API Key',
