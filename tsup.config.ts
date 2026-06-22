@@ -9,10 +9,7 @@ export default defineConfig({
   },
   format: ['cjs'],
   dts: false,
-  // Bundle the SDK inline so the published package has zero runtime deps.
-  // n8n's verification rules require packages to have no production dependencies.
-  noExternal: ['@scopebound/sdk'],
-  // n8n-workflow stays external — provided by the host n8n install at runtime.
+  // n8n-workflow is provided by the host n8n install at runtime.
   external: ['n8n-workflow'],
   outDir: 'dist',
   clean: true,
