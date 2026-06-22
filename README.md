@@ -1,149 +1,102 @@
-# @scopebound/n8n-nodes-scopebound
+# n8n-nodes-scopebound
 
-Official n8n community node for [Scopebound](https://scopebound.ai) — pre-execution scope enforcement for AI agent workflows.
+[![npm version](https://img.shields.io/npm/v/@scopebound/n8n-nodes-scopebound/preview.svg)](https://www.npmjs.com/package/@scopebound/n8n-nodes-scopebound)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-> **v0.1.0-preview** — Preview release. APIs may change before v1.0.
+Official [Scopebound](https://scopebound.ai) community node for [n8n](https://n8n.io). Validates AI agent workflows against role-based authorization scopes **before** they run — catching credential misuse, out-of-scope tool calls, and compliance violations at design time rather than at the audit.
 
 ## What it does
 
-Adds a **Scopebound Scope Check** node to n8n that validates workflow definitions against agent role authorization scope before execution. Use it to:
+The **Scopebound Scope Check** node sits anywhere in your n8n workflow and evaluates a workflow definition (n8n format, or the canonical Scopebound shape) against a Scopebound agent role. The evaluation runs server-side via the [Scopebound API](https://scopebound.ai) and returns:
 
-- Gate workflows in CI/CD-style n8n pipelines
-- Pre-validate AI agent workflows passed through n8n as data
-- Run compliance checks against SOC1, SOC2 Type II, PRODUCTION_READINESS, or HIPAA profiles
-- Issue signed attestation tokens that compliance teams can verify offline
+- A pass/fail verdict per compliance profile (SOC1, SOC2 Type II, Production Readiness, HIPAA)
+- Violations with codes, severities, and offending node IDs
+- A cryptographically signed attestation token suitable for audit retention
 
-The node communicates with the Scopebound enforcement plane via the [@scopebound/sdk](https://www.npmjs.com/package/@scopebound/sdk) TypeScript client.
+The node routes items to a **Pass** or **Fail** output based on the result, and supports three modes: *warn only*, *block on critical*, or *throw on critical*.
 
-## Install
+## Installation
 
-In your n8n instance:
+### Via n8n Community Nodes (recommended)
 
-**Settings → Community Nodes → Install** → enter package name:
+1. In your n8n instance, go to **Settings → Community Nodes**
+2. Click **Install a community node**
+3. Enter `@scopebound/n8n-nodes-scopebound` and confirm
+4. Reload n8n; the **Scopebound Scope Check** node will appear in the node picker
 
-```
-@scopebound/n8n-nodes-scopebound
-```
-
-Or via npm in a self-hosted n8n:
+### Manual installation (self-hosted n8n)
 
 ```bash
-cd ~/.n8n/nodes
-npm install @scopebound/n8n-nodes-scopebound@preview
+# In your n8n custom nodes directory (typically ~/.n8n/nodes/)
+npm install @scopebound/n8n-nodes-scopebound
 ```
 
-Restart n8n. The "Scopebound Scope Check" node appears in the node picker.
+Restart your n8n instance after installation.
 
-## Configure credentials
+## Credentials
 
-**Credentials → New → Scopebound API**:
+The node requires a **Scopebound API** credential. To create one:
 
-| Field   | Value                                                                  |
-| ------- | ---------------------------------------------------------------------- |
-| API Key | Your Scopebound API key (starts with `sb-`)                            |
-| Base URL| `https://api.scopebound.ai` (or `http://localhost:8080` for local dev) |
+1. In n8n, click **Credentials → New → Scopebound API**
+2. Enter your **API Key** (obtainable from your Scopebound partner workspace)
+3. Enter the **Base URL** of your Scopebound enforcement plane (e.g. `https://api.scopebound.ai`, or a self-hosted URL)
+4. Save
 
-## Use the node
+Don't have a Scopebound API key yet? Request access at [scopebound.ai](https://scopebound.ai).
 
-Drop the **Scopebound Scope Check** node into any workflow. Configure:
+## Usage
 
-| Property            | Description                                                          |
-| ------------------- | -------------------------------------------------------------------- |
-| Role ID             | The agent role to evaluate against (UUID or name)                    |
-| Evaluation Profile  | Which compliance profiles to run (multi-select)                      |
-| Workflow Source     | Read from input field, or paste a workflow as parameter              |
-| Source Format       | Savant (canonical), n8n, Make, Zapier                                |
-| Mode                | Warn Only (default), Block on Critical, Throw on Critical            |
+Drop the **Scopebound Scope Check** node into any workflow where you have a workflow definition you want to validate. The node configures with these parameters:
 
-### Mode behavior
+| Parameter | Description |
+|---|---|
+| **Identify Role By** | Choose whether to specify the agent role by UUID or by name |
+| **Role ID** / **Role Name** | The role to evaluate against |
+| **Evaluation Profile** | One or more compliance profiles: SOC1, SOC2 Type II, Production Readiness, HIPAA |
+| **Workflow Source** | Where the workflow definition comes from: an input field, or a JSON parameter |
+| **Workflow Field** | (optional) Name of the JSON field on each input item containing the workflow. Leave blank to treat the whole input item as the workflow. |
+| **Workflow Format** | Format of the workflow data: `n8n` (native n8n export), `Canonical` (Scopebound's native shape), `Make`, or `Zapier` |
+| **Mode** | `Warn Only` (always pass), `Block on Critical` (route critical violations to Fail), or `Throw on Critical` (halt the workflow) |
 
-- **Warn Only** (default): All items pass through to the "Pass" output. Evaluation result is attached to each item at `_scopebound`. Use for observability without blocking.
-- **Block on Critical Violations**: Items with critical violations are routed to the "Fail" output. Non-critical violations still pass.
-- **Throw on Critical Violations**: The workflow halts with an error when critical violations occur. Use when you want hard failure semantics.
+The output of every item is enriched with a `_scopebound` field containing the full evaluation result (verdict, violations, attestation token).
 
-### Example output (Warn mode)
-
-Each item passes through with evaluation metadata attached:
-
-```json
-{
-  "workflow": { ... your original data ... },
-  "_scopebound": {
-    "evaluationId": "eval_abc123",
-    "workflowHash": "...",
-    "soc1Status": "pass",
-    "productionReadinessStatus": "fail",
-    "violations": [
-      {
-        "nodeId": "post",
-        "code": "SB-SCOPE-003",
-        "severity": "critical",
-        "message": "Node 'post' references credential 'sap-prod-api' which is not in role allowed_credentials",
-        "control": "SB-SCOPE-003",
-        "layer": 1
-      }
-    ],
-    "warnings": [],
-    "attestationToken": null
-  }
-}
-```
-
-The `attestationToken` is only present when no critical violations were found — a JWT signed by Scopebound that auditors can verify offline.
-
-## Common patterns
-
-### Validate an externally-received workflow before activating
+### Example workflow
 
 ```
-[Webhook (workflow received)] → [Scopebound Scope Check (block mode)] → [Activate Workflow]
-                                                            ↓ fail
-                                                [Notify (rejected for compliance reasons)]
+Manual Trigger
+    ↓
+Edit Fields (Set)   — outputs an n8n workflow JSON to evaluate
+    ↓
+Scopebound Scope Check   — validates it against role "ap-processor"
+    ├── Pass → continue downstream processing
+    └── Fail → notify on Slack, log to audit, or halt
 ```
 
-### Audit logging on every executed workflow
+A working example JSON is in [`examples/workflow-lint.json`](examples/workflow-lint.json) in this repository.
 
-```
-[Workflow Trigger] → [Scopebound Scope Check (warn mode)] → [Original workflow logic]
-                                              ↓
-                            [Send to audit ledger / SIEM]
-```
+## Compatibility
 
-### Run evaluation on n8n workflows from disk for CI
+- n8n **v2.0** and above (uses `n8nNodesApiVersion: 1`)
+- Node.js **20.15** or later
+- Works in self-hosted, n8n Cloud, and Desktop environments
 
-```
-[Read Binary File (workflow.json)] → [Scopebound Scope Check (source format=n8n, throw mode)] → [Pass]
-```
+## Resources
 
-Workflow fails the n8n pipeline if violations exist — useful for "lint your workflows" CI.
+- [Scopebound docs](https://github.com/scopebound-ai)
+- [Scopebound API reference](https://github.com/scopebound-ai)
+- [TypeScript SDK](https://www.npmjs.com/package/@scopebound/sdk) (the foundation this node is built on)
+- [Report an issue](https://github.com/scopebound-ai/n8n-nodes-scopebound/issues)
 
-## Development
+## Version history
 
-```bash
-git clone https://github.com/scopebound-ai/n8n-nodes-scopebound.git
-cd n8n-nodes-scopebound
-npm install
-npm run build
-```
+### 0.1.0-preview
 
-To test against your local n8n:
-
-```bash
-# Link the node package
-cd ~/.n8n/nodes
-npm install /path/to/your/n8n-nodes-scopebound
-
-# Restart n8n
-```
-
-## Roadmap
-
-- Post-execution audit logging node (record actual tool calls + results to Scopebound ledger)
-- Role discovery node (dropdown of available roles from your Scopebound workspace)
-- Attestation Token Verify node (offline JWT verification against platform public key)
-- Approval workflow integration (request human approval when role requires it)
-- Workflow translator inspection (preview what Scopebound's translator would produce from an n8n workflow without running an evaluation)
+- Initial preview release
+- Scopebound Scope Check node with Role ID / Role Name identification
+- Four evaluation profiles, three operating modes
+- Pass/Fail output routing
+- Supports n8n, Canonical (Scopebound), Make, and Zapier workflow formats
 
 ## License
 
-Apache 2.0
+[Apache-2.0](LICENSE) © Scopebound

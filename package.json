@@ -1,10 +1,26 @@
 {
   "name": "@scopebound/n8n-nodes-scopebound",
   "version": "0.1.0-preview.1",
-  "description": "Scopebound n8n community node — pre-execution scope enforcement for AI agent workflows. Validates workflows against agent role authorization before execution.",
+  "description": "Pre-execution scope enforcement for AI agent workflows. Validates workflow definitions against role-based authorization scopes (SOC1, SOC2, Production Readiness) before they run, with cryptographically signed attestation tokens for audit.",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "ai-agents",
+    "agent-governance",
+    "scope-enforcement",
+    "compliance",
+    "soc1",
+    "soc2",
+    "production-readiness",
+    "scopebound"
+  ],
   "license": "Apache-2.0",
-  "author": "Scopebound, Inc. <hello@scopebound.ai>",
-  "homepage": "https://scopebound.ai",
+  "author": {
+    "name": "Scopebound",
+    "email": "support@scopebound.ai",
+    "url": "https://scopebound.ai"
+  },
+  "homepage": "https://github.com/scopebound-ai/n8n-nodes-scopebound#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scopebound-ai/n8n-nodes-scopebound.git"
@@ -12,32 +28,18 @@
   "bugs": {
     "url": "https://github.com/scopebound-ai/n8n-nodes-scopebound/issues"
   },
-  "keywords": [
-    "n8n-community-node-package",
-    "n8n",
-    "scopebound",
-    "ai-agents",
-    "compliance",
-    "soc1",
-    "soc2",
-    "hipaa",
-    "policy-enforcement"
-  ],
   "engines": {
-    "node": ">=18.10"
+    "node": ">=20.15"
   },
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc && gulp build:icons",
-    "dev": "tsc --watch",
-    "format": "prettier nodes credentials --write",
-    "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "npm run build && npm run lint -s"
-  },
+  "main": "dist/nodes/Scopebound/Scopebound.node.js",
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
@@ -47,20 +49,14 @@
       "dist/nodes/Scopebound/Scopebound.node.js"
     ]
   },
-  "dependencies": {
-    "@scopebound/sdk": "0.1.0-preview.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-n8n-nodes-base": "^1.16.0",
-    "gulp": "^5.0.1",
-    "n8n-workflow": "^2.16.0",
-    "prettier": "^3.2.0",
-    "typescript": "^5.4.0"
-  },
   "peerDependencies": {
     "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@scopebound/sdk": "0.1.0-preview.2",
+    "@types/node": "^20.0.0",
+    "n8n-workflow": "^1.17.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.0"
   }
 }
