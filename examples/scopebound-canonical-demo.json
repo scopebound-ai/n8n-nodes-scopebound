@@ -1,0 +1,56 @@
+{
+  "name": "Scopebound Canonical Demo",
+  "_comment": "Importable n8n workflow demonstrating the Scopebound Scope Check node. After import: configure the Scopebound API credential (you need a Scopebound API key from your partner workspace), set the Role ID to a UUID from your workspace, and execute. The Pass output will contain the evaluation result attached as _scopebound metadata.",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"workflow\": {\n    \"workflowId\": \"demo-canonical\",\n    \"nodes\": [\n      {\"id\": \"src\", \"type\": \"source\", \"tool\": \"manual_trigger\"},\n      {\"id\": \"dst\", \"type\": \"destination\", \"tool\": \"post_to_erp\", \"credentials\": [\"sap-prod-api\"]}\n    ],\n    \"edges\": [{\"from\": \"src\", \"to\": \"dst\"}]\n  }\n}",
+        "options": {}
+      },
+      "name": "Build canonical workflow",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "roleIdentifierType": "id",
+        "roleId": "REPLACE_WITH_YOUR_ROLE_UUID",
+        "evaluationProfile": ["PRODUCTION_READINESS"],
+        "workflowSource": "inputJson",
+        "workflowField": "workflow",
+        "sourceFormat": "savant",
+        "mode": "warn"
+      },
+      "name": "Scopebound Scope Check",
+      "type": "@scopebound/n8n-nodes-scopebound.scopebound",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "scopeboundApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Scopebound API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[{"node": "Build canonical workflow", "type": "main", "index": 0}]]
+    },
+    "Build canonical workflow": {
+      "main": [[{"node": "Scopebound Scope Check", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
