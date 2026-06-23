@@ -1,7 +1,7 @@
 # n8n-nodes-scopebound
 
 [![npm version](https://img.shields.io/npm/v/@scopebound/n8n-nodes-scopebound/preview.svg)](https://www.npmjs.com/package/@scopebound/n8n-nodes-scopebound)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Official [Scopebound](https://scopebound.ai) community node for [n8n](https://n8n.io). Validates AI agent workflows against role-based authorization scopes **before** they run — catching credential misuse, out-of-scope tool calls, and compliance violations at design time rather than at the audit.
 
@@ -99,4 +99,4 @@ A working example JSON is in [`examples/workflow-lint.json`](examples/workflow-l
 
 ## License
 
-[Apache-2.0](LICENSE) © Scopebound
+[MIT](LICENSE) © Scopebound
