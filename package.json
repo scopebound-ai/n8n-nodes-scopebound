@@ -1,6 +1,6 @@
 {
   "name": "@scopebound/n8n-nodes-scopebound",
-  "version": "0.1.0-preview.5",
+  "version": "0.1.0-preview.6",
   "description": "Pre-execution scope enforcement for AI agent workflows. Validates workflow definitions against role-based authorization scopes (SOC1, SOC2, Production Readiness) before they run, with cryptographically signed attestation tokens for audit.",
   "keywords": [
     "n8n-community-node-package",
@@ -17,7 +17,7 @@
   "license": "Apache-2.0",
   "author": {
     "name": "Scopebound",
-    "email": "support@scopebound.ai",
+    "email": "contact@scopebound.ai",
     "url": "https://scopebound.ai"
   },
   "homepage": "https://github.com/scopebound-ai/n8n-nodes-scopebound#readme",
