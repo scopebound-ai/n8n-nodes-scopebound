@@ -6,7 +6,7 @@ import type {
   INodeTypeDescription,
   JsonObject,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 // ─── Local types (formerly imported from @scopebound/sdk) ─────────────────────
 
@@ -183,38 +183,42 @@ async function evaluateOne(
     const bodyMsg = extractResponseBody(err);
     const baseMsg = err.message || err.cause?.message || 'unknown error';
     const detail = bodyMsg ? ` — server response: ${bodyMsg}` : '';
+    const rawAsJson = raw as JsonObject;
 
     if (status === 401 || status === 403) {
-      throw new NodeOperationError(
-        ctx.getNode(),
-        `Scopebound API key rejected (HTTP ${status}) — check the credential configuration${detail}`,
-      );
+      throw new NodeApiError(ctx.getNode(), rawAsJson, {
+        message: `Scopebound API key rejected (HTTP ${status}) — check the credential configuration${detail}`,
+        httpCode: String(status),
+      });
     }
     if (status === 404) {
-      throw new NodeOperationError(
-        ctx.getNode(),
-        `Scopebound role not found (HTTP 404) — verify the Role ID or Name exists in the partner workspace${detail}`,
-      );
+      throw new NodeApiError(ctx.getNode(), rawAsJson, {
+        message: `Scopebound role not found (HTTP 404) — verify the Role ID or Name exists in the partner workspace${detail}`,
+        httpCode: '404',
+      });
     }
     if (status === 400 || status === 422) {
-      throw new NodeOperationError(
-        ctx.getNode(),
-        `Scopebound rejected the request (HTTP ${status}) — ${baseMsg}${detail}`,
-      );
+      throw new NodeApiError(ctx.getNode(), rawAsJson, {
+        message: `Scopebound rejected the request (HTTP ${status}) — ${baseMsg}${detail}`,
+        httpCode: String(status),
+      });
     }
     if (status >= 500) {
-      throw new NodeOperationError(
-        ctx.getNode(),
-        `Scopebound enforcement plane error (HTTP ${status}) — ${baseMsg}${detail}`,
-      );
+      throw new NodeApiError(ctx.getNode(), rawAsJson, {
+        message: `Scopebound enforcement plane error (HTTP ${status}) — ${baseMsg}${detail}`,
+        httpCode: String(status),
+      });
     }
     if (status > 0) {
-      throw new NodeOperationError(
-        ctx.getNode(),
-        `Scopebound API error (HTTP ${status}) — ${baseMsg}${detail}`,
-      );
+      throw new NodeApiError(ctx.getNode(), rawAsJson, {
+        message: `Scopebound API error (HTTP ${status}) — ${baseMsg}${detail}`,
+        httpCode: String(status),
+      });
     }
-    throw new NodeOperationError(ctx.getNode(), `Scopebound API unreachable — ${baseMsg}`);
+    // No status code extractable — likely a connectivity error (DNS, refused, timeout)
+    throw new NodeApiError(ctx.getNode(), rawAsJson, {
+      message: `Scopebound API unreachable — ${baseMsg}`,
+    });
   }
 
   return camelCaseKeysDeep(response) as EvaluationResult;
@@ -366,7 +370,7 @@ export class Scopebound implements INodeType {
           {
             name: 'n8n',
             value: 'n8n',
-            description: 'Native n8n workflow export (most common in n8n)',
+            description: 'Native n8n workflow export (server-side translator support is preview-only)',
           },
           {
             name: 'Canonical',
@@ -377,7 +381,7 @@ export class Scopebound implements INodeType {
           { name: 'Zapier', value: 'zapier', description: 'Zapier workflow export' },
         ],
         description:
-          'Format of the workflow definition being evaluated. n8n is the default since most users send n8n exports.',
+          'Format of the workflow definition being evaluated. Canonical is the default supported path; n8n is preview.',
       },
       {
         displayName: 'Mode',
