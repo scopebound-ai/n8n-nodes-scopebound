@@ -46,6 +46,45 @@ Don't have a Scopebound API key yet? Request access at [scopebound.ai](https://s
 
 ## Usage
 
+### Workflow formats
+
+The Scopebound node supports two workflow formats. The format must match the shape of your input data.
+
+**`n8n` — for n8n users (recommended)**
+
+A native n8n workflow export. This is the format you get when you export a workflow from n8n's UI (top-right menu → Download). Example:
+
+```json
+{
+  "name": "your-workflow",
+  "nodes": [
+    {"id": "a", "name": "Manual Trigger", "type": "n8n-nodes-base.manualTrigger", "typeVersion": 1, "position": [0, 0], "parameters": {}}
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node": "...", "type": "main", "index": 0}]]}
+  }
+}
+```
+
+**`Canonical` — for hand-built or non-n8n workflow definitions**
+
+Scopebound's native workflow shape. Use this when you're building workflow definitions manually or evaluating workflows from a non-n8n source. Example:
+
+```json
+{
+  "workflowId": "demo",
+  "nodes": [
+    {"id": "src", "type": "source", "tool": "manual_trigger"},
+    {"id": "dst", "type": "destination", "tool": "post_to_erp", "credentials": ["sap-prod-api"]}
+  ],
+  "edges": [{"from": "src", "to": "dst"}]
+}
+```
+
+> ⚠️ Set the **Workflow Format** dropdown to match the shape of your input data. If you set the format to `n8n` but provide Canonical-shape data (or vice versa), the server will reject the request with a translator error.
+
+Example workflows for both formats are in [`examples/`](examples/).
+
 Drop the **Scopebound Scope Check** node into any workflow where you have a workflow definition you want to validate. The node configures with these parameters:
 
 | Parameter | Description |

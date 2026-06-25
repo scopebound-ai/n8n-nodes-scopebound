@@ -1,0 +1,56 @@
+{
+  "name": "Scopebound n8n Format Demo",
+  "_comment": "Importable n8n workflow demonstrating the Scopebound Scope Check node against a real n8n workflow export. After import: configure the Scopebound API credential (you need a Scopebound API key from your partner workspace), set the Role ID to a UUID from your workspace, and execute. The Pass output will contain the evaluation result attached as _scopebound metadata.",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"name\": \"demo-target-workflow\",\n  \"active\": false,\n  \"nodes\": [\n    {\n      \"id\": \"a\",\n      \"name\": \"Manual Trigger\",\n      \"type\": \"n8n-nodes-base.manualTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [0, 0],\n      \"parameters\": {}\n    },\n    {\n      \"id\": \"b\",\n      \"name\": \"HTTP\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4,\n      \"position\": [200, 0],\n      \"parameters\": {\n        \"url\": \"https://example.com\"\n      }\n    }\n  ],\n  \"connections\": {\n    \"Manual Trigger\": {\n      \"main\": [[{\"node\": \"HTTP\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
+        "options": {}
+      },
+      "name": "Build n8n workflow export",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "roleIdentifierType": "id",
+        "roleId": "REPLACE_WITH_YOUR_ROLE_UUID",
+        "evaluationProfile": ["PRODUCTION_READINESS"],
+        "workflowSource": "inputJson",
+        "workflowField": "",
+        "sourceFormat": "n8n",
+        "mode": "warn"
+      },
+      "name": "Scopebound Scope Check",
+      "type": "@scopebound/n8n-nodes-scopebound.scopebound",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "scopeboundApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Scopebound API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[{"node": "Build n8n workflow export", "type": "main", "index": 0}]]
+    },
+    "Build n8n workflow export": {
+      "main": [[{"node": "Scopebound Scope Check", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
