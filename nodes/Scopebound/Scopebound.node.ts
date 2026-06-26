@@ -11,7 +11,7 @@ import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 // ─── Local types (formerly imported from @scopebound/sdk) ─────────────────────
 
 type EvaluationProfile = 'SOC1' | 'SOC2_TYPE_II' | 'PRODUCTION_READINESS' | 'HIPAA';
-type SourceFormat = 'savant' | 'n8n' | 'make' | 'zapier';
+type SourceFormat = 'canonical' | 'n8n' | 'make' | 'zapier';
 type EvaluationStatus = 'pass' | 'fail' | 'warnings';
 type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
@@ -365,7 +365,7 @@ export class Scopebound implements INodeType {
         displayName: 'Workflow Format',
         name: 'sourceFormat',
         type: 'options',
-        default: 'savant',
+        default: 'canonical',
         options: [
           {
             name: 'n8n',
@@ -374,7 +374,7 @@ export class Scopebound implements INodeType {
           },
           {
             name: 'Canonical',
-            value: 'savant',
+            value: 'canonical',
             description: 'Scopebound canonical workflow shape — for hand-built workflow JSONs',
           },
           { name: 'Make', value: 'make', description: 'Make.com workflow export' },
@@ -442,9 +442,15 @@ export class Scopebound implements INodeType {
       const result = await evaluateOne(this, baseUrl, apiKey, {
         roleId,
         evaluationProfile,
-        workflow: sourceFormat === 'savant' ? workflow : undefined,
-        workflowRaw: sourceFormat !== 'savant' ? workflow : undefined,
-        sourceFormat: sourceFormat !== 'savant' ? sourceFormat : undefined,
+        // Backward compat: treat both 'canonical' (new wire value) and
+        // 'savant' (legacy alias) as the canonical path. Server's
+        // CanonicalSourceFormat helper normalizes both identically.
+        workflow: (sourceFormat === 'canonical' || sourceFormat === 'savant') ? workflow : undefined,
+        workflowRaw: (sourceFormat !== 'canonical' && sourceFormat !== 'savant') ? workflow : undefined,
+        sourceFormat: (sourceFormat !== 'canonical' && sourceFormat !== 'savant') ? sourceFormat : undefined,
+        // workflow: sourceFormat === 'savant' ? workflow : undefined,
+        // workflowRaw: sourceFormat !== 'savant' ? workflow : undefined,
+        // sourceFormat: sourceFormat !== 'savant' ? sourceFormat : undefined,
       });
 
       const enriched = inputItems.map((item, i) => ({
@@ -494,9 +500,15 @@ export class Scopebound implements INodeType {
       const result = await evaluateOne(this, baseUrl, apiKey, {
         roleId,
         evaluationProfile,
-        workflow: sourceFormat === 'savant' ? workflow : undefined,
-        workflowRaw: sourceFormat !== 'savant' ? workflow : undefined,
-        sourceFormat: sourceFormat !== 'savant' ? sourceFormat : undefined,
+        // Backward compat: treat both 'canonical' (new wire value) and
+        // 'savant' (legacy alias) as the canonical path. Server's
+        // CanonicalSourceFormat helper normalizes both identically.
+        workflow: (sourceFormat === 'canonical' || sourceFormat === 'savant') ? workflow : undefined,
+        workflowRaw: (sourceFormat !== 'canonical' && sourceFormat !== 'savant') ? workflow : undefined,
+        sourceFormat: (sourceFormat !== 'canonical' && sourceFormat !== 'savant') ? sourceFormat : undefined,
+        //workflow: sourceFormat === 'savant' ? workflow : undefined,
+        //workflowRaw: sourceFormat !== 'savant' ? workflow : undefined,
+        //sourceFormat: sourceFormat !== 'savant' ? sourceFormat : undefined,
       });
 
       const enriched: INodeExecutionData = {

@@ -27,7 +27,7 @@
         "evaluationProfile": ["PRODUCTION_READINESS"],
         "workflowSource": "inputJson",
         "workflowField": "workflow",
-        "sourceFormat": "savant",
+        "sourceFormat": "canonical",
         "mode": "warn"
       },
       "name": "Scopebound Scope Check",
