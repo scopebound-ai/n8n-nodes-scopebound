@@ -121,9 +121,11 @@ A working example JSON is in [`examples/workflow-lint.json`](examples/workflow-l
 
 ## Resources
 
-- [Scopebound docs](https://github.com/scopebound-ai)
-- [Scopebound API reference](https://github.com/scopebound-ai)
-- [TypeScript SDK](https://www.npmjs.com/package/@scopebound/sdk) (the foundation this node is built on)
+- [**Full documentation for this node**](https://docs.scopebound.ai/sdk/n8n) — installation, configuration, workflow formats, troubleshooting
+- [Scopebound documentation home](https://docs.scopebound.ai) — quickstart, framework guides, API reference
+- [Scopebound API reference](https://docs.scopebound.ai/api/reference/)
+- [TypeScript SDK](https://docs.scopebound.ai/sdk/typescript) — code-level integration
+- [Example workflows](https://github.com/scopebound-ai/n8n-nodes-scopebound/tree/main/examples)
 - [Report an issue](https://github.com/scopebound-ai/n8n-nodes-scopebound/issues)
 
 ## Version history
